@@ -25,10 +25,10 @@ class TransactionModel(BaseModel):
     transaction_id: int
     date_create: datetime
     amount: Decimal
-    status_id: int
-    currency_type_id: int
-    customer_id: int
-    product_id: int
+    status_name: str
+    currency_type_name: str
+    customer_name: str
+    product_name: str
     number_of_products: int
 
 class TransactionResponseModel(ResponseModel):

@@ -22,7 +22,7 @@ class ProductModel(BaseModel):
     product_name: str
     price: Decimal
     quantity: int
-    currency_type_id: int
+    currency_type_name: str
 
 
 class ProductResponseModel(ResponseModel):

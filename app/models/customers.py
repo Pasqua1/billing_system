@@ -20,9 +20,9 @@ class Customer(Base):
 class CustomerModel(BaseModel):
     customer_id: int
     customer_name: str
-    company_id: int
+    company_name: str
     balance: Decimal
-    currency_type_id: int
+    currency_type_name: str
 
 
 class CustomerResponseModel(ResponseModel):

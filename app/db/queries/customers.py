@@ -2,12 +2,24 @@ from sqlalchemy import select, insert, update
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.customers import Customer, CustomerModel
+from models.companies import Company
+from models.currency_types import CurrencyType
 
 
-async def get_customer(session: AsyncSession, customer_id: int) -> Customer:
-    result = await session.execute(select(Customer).
-                                   where(Customer.customer_id==customer_id))
-    return result.scalar()
+async def get_customer(session: AsyncSession, customer_id: int) -> CustomerModel:
+    result = await session.execute(select(Customer, Company, CurrencyType).
+                                   where(Customer.customer_id==customer_id).
+                                   join(Company).
+                                   join(CurrencyType))
+    for row in result:
+        customer = CustomerModel(
+            customer_id=row.Customer.customer_id,
+            customer_name=row.Customer.customer_name,
+            company_name=row.Company.company_name,
+            balance=row.Customer.balance,
+            currency_type_name=row.CurrencyType.currency_type_name
+        )
+    return customer
 
 
 async def update_customer_balance(session: AsyncSession, 
@@ -27,16 +39,20 @@ async def update_customer_balance(session: AsyncSession,
 
 async def get_company_customers(session: AsyncSession,
                                 company_id: int) -> list[CustomerModel]:
-    result = await session.execute(select(Customer).
-                                   where(Customer.company_id==company_id))
-    customers = result.scalars().all()
-    customers = [
-        CustomerModel(customer_id=customer.customer_id,
-                      customer_name=customer.customer_name,
-                      company_id=customer.company_id,
-                      balance=customer.balance,
-                      currency_type_id=customer.currency_type_id) for customer in customers
-    ]
+    result = await session.execute(select(Customer, Company, CurrencyType).
+                                   where(Customer.company_id==company_id).
+                                   join(Company).
+                                   join(CurrencyType))
+    customers = []
+    for row in result:
+        customer = CustomerModel(
+            customer_id=row.Customer.customer_id,
+            customer_name=row.Customer.customer_name,
+            company_name=row.Company.company_name,
+            balance=row.Customer.balance,
+            currency_type_name=row.CurrencyType.currency_type_name
+        )
+        customers.append(customer)
     return customers
 
 

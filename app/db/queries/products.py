@@ -1,6 +1,7 @@
 from sqlalchemy import select, insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.products import Product, ProductModel
+from models.currency_types import CurrencyType
 
 
 async def get_product(session: AsyncSession, product_id: int) -> Product:
@@ -24,15 +25,19 @@ async def update_product_quantity(session: AsyncSession,
 
 
 async def get_products(session: AsyncSession, price: int) -> list[ProductModel]:
-    result = await session.execute(select(Product).where(Product.price<=price))
-    products = result.scalars().all()
-    products = [
-        ProductModel(product_id=product.product_id,
-                     product_name=product.product_name,
-                     price=product.price,
-                     quantity=product.quantity,
-                     currency_type_id=product.currency_type_id) for product in products
-    ]
+    result = await session.execute(select(Product, CurrencyType).
+                                   where(Product.price<=price).
+                                   join(CurrencyType))
+    products = []
+    for row in result:
+        product = ProductModel(
+            product_id=row.Product.product_id,
+            product_name=row.Product.product_name,
+            price=row.Product.price,
+            quantity=row.Product.quantity,
+            currency_type_name=row.CurrencyType.currency_type_name
+        )
+        products.append(product)
     return products
 
 
