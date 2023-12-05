@@ -1,0 +1,30 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: network
+
+services:
+  postgres:
+    container_name: "pgsql_db"
+    build: ./dockers/pgsql
+    restart: on-failure
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dockers/pgsql/sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./dockers/pgsql/sql/fill_data.sql:/docker-entrypoint-initdb.d/fill_data.sql
+  fastapi:
+    links:
+      - postgres
+    container_name: "app"
+    build: ./dockers/api
+    ports:
+      - "8808:8808"
+    volumes:
+      - ./app:/usr/src/app
+

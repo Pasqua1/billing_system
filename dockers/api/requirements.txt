@@ -1,0 +1,5 @@
+asyncpg
+sqlalchemy
+uvicorn
+fastapi
+starlette
