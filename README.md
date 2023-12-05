@@ -9,6 +9,7 @@ docker compose up
 ## Application will be available on localhost in your browser.
 
 API port: 8808
+
 PostgreSQL port: 5432
 
 ## Web routes
