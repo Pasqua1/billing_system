@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from api.routes import transaction_statuses
-from api.routes import currency_types
-from api.routes import companies
-from api.routes import customers
-from api.routes import products
-from api.routes import transactions
+from app.api.routes import transaction_statuses
+from app.api.routes import currency_types
+from app.api.routes import companies
+from app.api.routes import customers
+from app.api.routes import products
+from app.api.routes import transactions
 
 router = APIRouter()
 router.include_router(transaction_statuses.router, prefix='', tags=['transaction_statuses'])

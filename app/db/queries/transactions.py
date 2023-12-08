@@ -1,10 +1,11 @@
-from sqlalchemy import select, insert, outerjoin
+from sqlalchemy import select, insert
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.transactions import Transaction, TransactionModel
-from models.products import Product
-from models.customers import Customer
-from models.transaction_statuses import TransactionStatus
-from models.currency_types import CurrencyType
+from app.models.transactions import Transaction, TransactionInsertModel, TransactionFullModel
+from app.models.products import Product
+from app.models.customers import Customer
+from app.models.transaction_statuses import TransactionStatus
+from app.models.currency_types import CurrencyType
 
 
 async def get_transaction_by_transaction_id(session: AsyncSession, transaction_id: int) -> Transaction:
@@ -20,8 +21,9 @@ async def get_transaction_by_transaction_id(session: AsyncSession, transaction_i
         where(Transaction.product_id == Product.product_id).
         where(Transaction.customer_id == Customer.customer_id)
     )
+    transaction = None
     for row in result:
-        transaction = TransactionModel(
+        transaction = TransactionFullModel(
             transaction_id=row.Transaction.transaction_id,
             date_create=row.Transaction.date_create,
             amount=row.Transaction.amount,
@@ -31,24 +33,27 @@ async def get_transaction_by_transaction_id(session: AsyncSession, transaction_i
             product_name=row.Product.product_name,
             number_of_products=row.Transaction.number_of_products
         )
+    if transaction is None:
+        raise HTTPException(detail=f'transaction with id={transaction_id} not found',
+                            status_code=status.HTTP_404_NOT_FOUND)
     return transaction
 
 
-async def get_transaction_of_customer(session: AsyncSession, customer_id: int) -> list[TransactionModel]:
+async def get_transactions_of_customer(session: AsyncSession, customer_id: int) -> list[TransactionFullModel]:
     result = await session.execute(
         select(Transaction,
                 TransactionStatus,
                 CurrencyType,
                 Product,
                 Customer).
-        where(Transaction.customer_id==customer_id).
+        where(Transaction.customer_id == customer_id).
         where(Transaction.status_id == TransactionStatus.status_id).
         where(Transaction.currency_type_id == CurrencyType.currency_type_id).
         where(Transaction.product_id == Product.product_id).
         where(Transaction.customer_id == Customer.customer_id))
     transactions = []
     for row in result:
-        transaction = TransactionModel(
+        transaction = TransactionFullModel(
             transaction_id=row.Transaction.transaction_id,
             date_create=row.Transaction.date_create,
             amount=row.Transaction.amount,
@@ -62,7 +67,7 @@ async def get_transaction_of_customer(session: AsyncSession, customer_id: int) -
     return transactions
 
 
-async def get_transaction_in_range(session: AsyncSession, amount: int) -> list[TransactionModel]:
+async def get_transactions_in_range(session: AsyncSession, amount: int) -> list[TransactionFullModel]:
     result = await session.execute(
         select(Transaction,
                 TransactionStatus,
@@ -76,7 +81,7 @@ async def get_transaction_in_range(session: AsyncSession, amount: int) -> list[T
         where(Transaction.customer_id == Customer.customer_id))
     transactions = []
     for row in result:
-        transaction = TransactionModel(
+        transaction = TransactionFullModel(
             transaction_id=row.Transaction.transaction_id,
             date_create=row.Transaction.date_create,
             amount=row.Transaction.amount,
@@ -89,7 +94,7 @@ async def get_transaction_in_range(session: AsyncSession, amount: int) -> list[T
         transactions.append(transaction)
     return transactions
 
-async def add_payment(session: AsyncSession, transaction: TransactionModel) -> Transaction:
+async def add_payment(session: AsyncSession, transaction: TransactionInsertModel) -> Transaction:
     result = await session.execute(insert(Transaction).
                                  values(amount=transaction.amount,
                                         status_id=transaction.status_id,

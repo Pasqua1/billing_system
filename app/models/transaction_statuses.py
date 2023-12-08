@@ -1,9 +1,9 @@
 import typing
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from db.base import Base
+from app.db.base import Base
 
-from models import ResponseModel
+from app.models import ResponseModel
 
 
 class TransactionStatus(Base):
@@ -13,14 +13,21 @@ class TransactionStatus(Base):
     status_name = Column(String)
 
 
-class TransactionStatusModel(BaseModel):
+class TransactionStatusBaseModel(BaseModel):
     status_id: int
+
+
+class TransactionStatusInsertModel(BaseModel):
     status_name: str
 
 
+class TransactionStatusFullModel(TransactionStatusBaseModel, TransactionStatusInsertModel):
+    pass
+
+
 class TransactionStatusResponseModel(ResponseModel):
-    transaction_status: typing.Optional[TransactionStatusModel]
+    transaction_status: typing.Optional[TransactionStatusFullModel]
 
 
 class TransactionStatusListModel(ResponseModel):
-    transaction_statuses: list[TransactionStatusModel]
+    transaction_statuses: list[TransactionStatusFullModel]

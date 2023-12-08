@@ -4,11 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 from decimal import Decimal
-from db.base import get_session
-from db.queries import products as queries
+from app.db.base import get_session
+from app.db.queries import products as queries
+from app.api.responses import CONFLICT
 
-from models.products import (
-    ProductModel, ProductListModel,
+from app.models.products import (
+    ProductInsertModel, ProductListModel,
     ProductResponseModel
 )
 
@@ -23,23 +24,34 @@ async def get_products(
     """
     Get the list of products whose cost does not exceed the specified price
     """
-    products = await queries.get_products(session, price)
-    return {'detail': 'success', 'products': products}
+    try:
+        products = await queries.get_products(session, price)
+        return {'detail': 'success', 'products': products}
+    except IntegrityError as _:
+        detail = 'database error'
+        return JSONResponse({'detail': 'error', 'message': detail},
+                            status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
-@router.post("/product", response_model=ProductResponseModel)
+@router.post("/product", status_code=status.HTTP_201_CREATED,
+             response_model=ProductResponseModel, responses=CONFLICT)
 async def add_product(
-    product: ProductModel,
+    product: ProductInsertModel,
     session: AsyncSession=Depends(get_session)
 ):
     """
     Create product
     """
-    new_product = await queries.add_product(session, product)
+    try:
+        new_product = await queries.add_product(session, product)
+    except IntegrityError as _:
+        detail = 'product with that name already exists in company'
+        return JSONResponse({'detail': 'error', 'message': detail},
+                            status_code=status.HTTP_409_CONFLICT)
     try:
         await session.commit()
         return {'detail': 'success', 'product': new_product}
     except IntegrityError as _:
-        detail = f'product was not added due to database conflict'
+        detail = f'product was not added due to database error'
         return JSONResponse({'detail': 'error', 'message': detail}, 
-                             status_code=status.HTTP_409_CONFLICT)
+                             status_code=status.HTTP_503_SERVICE_UNAVAILABLE)

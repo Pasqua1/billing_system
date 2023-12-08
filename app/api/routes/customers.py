@@ -3,73 +3,95 @@ from fastapi import Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
-from db.base import get_session
-from db.queries import customers as queries
+from app.db.base import get_session
+from app.db.queries import customers as queries
+from app.api.responses import CONFLICT, NOT_FOUND
 
-from models.customers import (
-    CustomerModel, CustomerListModel,
-    CustomerResponseModel
+from app.models.customers import (
+    CustomerListModel,
+    CustomerResponseModel,CustomerInsertModel
 )
 
 router = APIRouter()
 
 
-@router.get("/customer/{customer_id}", response_model=CustomerResponseModel)
+@router.get("/customer", response_model=CustomerResponseModel,
+            responses=NOT_FOUND)
 async def get_customer(
-    customer_id: int = Path(alias='customer_id'),
+    customer_id: int,
     session: AsyncSession=Depends(get_session)
 ):
     """
     Get customer
     """
-    customer = await queries.get_customer(session, customer_id)
-    return {'detail': 'success', 'customer': customer}
+    try:
+        customer = await queries.get_customer(session, customer_id)
+        return {'detail': 'success', 'customer': customer}
+    except IntegrityError as _:
+        detail = 'database error'
+        return JSONResponse({'detail': 'error', 'message': detail},
+                            status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
 
-
-@router.patch("/customer/{customer_id}/{balance}", response_model=CustomerResponseModel)
+@router.patch("/customer", status_code=200,
+              response_model=CustomerResponseModel, responses=NOT_FOUND)
 async def update_balance(
-    customer_id: int = Path(alias='customer_id'),
-    amount: int = Path(alias='balance'),
+    customer_id: int,
+    amount: int,
     session: AsyncSession=Depends(get_session)
 ):
     """
     Reduces the customer's balance by the amount
     """
-    customer = await queries.update_customer_balance(session, customer_id, amount)
     try:
+        customer = await queries.get_customer(session, customer_id)
+        new_balance = customer.balance - amount
+        customer = await queries.update_customer_balance(session, customer_id,
+                                                         new_balance)
         await session.commit()
         return {'detail': 'success', 'customer': customer}
-    except IntegrityError as e:
-        detail = f'customer was not added due to database conflict'
+    except IntegrityError as _:
+        detail = f'customer was not updated due to database error'
         return JSONResponse({'detail': 'error', 'message': detail}, 
-                             status_code=status.HTTP_409_CONFLICT)
+                             status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
-@router.get("/customer/company/{company_id}", response_model=CustomerListModel)
+@router.get("/customer/company", response_model=CustomerListModel)
 async def get_company_customers(
-    company_id: int = Path(alias='company_id'),
+    company_id: int,
     session: AsyncSession=Depends(get_session)
 ):
     """
     Get the customers of the company
     """
-    customers = await queries.get_company_customers(session, company_id)
-    return {'detail': 'success', 'customers': customers}
+    try:
+        customers = await queries.get_company_customers(session, company_id)
+        return {'detail': 'success', 'customers': customers}
+    except IntegrityError as _:
+        detail = 'database error'
+        return JSONResponse({'detail': 'error', 'message': detail},
+                            status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
-@router.post("/customer", response_model=CustomerResponseModel)
+@router.post("/customer", status_code=status.HTTP_201_CREATED,
+             response_model=CustomerResponseModel, responses=CONFLICT)
 async def add_customer(
-    customer: CustomerModel,
+    customer: CustomerInsertModel,
     session: AsyncSession=Depends(get_session)
 ):
     """
     Create customer
     """
-    new_customer = await queries.add_customer(session, customer)
+    try:
+        new_customer = await queries.add_customer(session, customer)
+    except IntegrityError as _:
+        detail = 'customer was not added due to database conflict'
+        return JSONResponse({'detail': 'error', 'message': detail},
+                            status_code=status.HTTP_409_CONFLICT)
     try:
         await session.commit()
         return {'detail': 'success', 'customer': new_customer}
-    except IntegrityError as e:
-        detail = f'customer was not added due to database conflict'
+    except IntegrityError as _:
+        detail = f'customer was not added due to database error'
         return JSONResponse({'detail': 'error', 'message': detail}, 
-                             status_code=status.HTTP_409_CONFLICT)
+                             status_code=status.HTTP_503_SERVICE_UNAVAILABLE)

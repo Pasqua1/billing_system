@@ -1,9 +1,9 @@
 import typing
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from db.base import Base
+from app.db.base import Base
 
-from models import ResponseModel
+from app.models import ResponseModel
 
 
 class CurrencyType(Base):
@@ -13,14 +13,21 @@ class CurrencyType(Base):
     currency_type_name = Column(String)
 
 
-class CurrencyTypeModel(BaseModel):
+class CurrencyTypeBaseModel(BaseModel):
     currency_type_id: int
+
+
+class CurrencyTypeInsertModel(BaseModel):
     currency_type_name: str
 
 
+class CurrencyTypeFullModel(CurrencyTypeBaseModel, CurrencyTypeInsertModel):
+    pass
+
+
 class CurrencyTypeResponseModel(ResponseModel):
-    currency_type: typing.Optional[CurrencyTypeModel]
+    currency_type: typing.Optional[CurrencyTypeFullModel]
 
 
 class CurrencyTypeListModel(ResponseModel):
-    currency_types: list[CurrencyTypeModel]
+    currency_types: list[CurrencyTypeFullModel]

@@ -1,10 +1,5 @@
 version: "3"
 
-networks:
-  default:
-    external:
-      name: network
-
 services:
   postgres:
     container_name: "pgsql_db"
@@ -27,4 +22,5 @@ services:
       - "8808:8808"
     volumes:
       - ./app:/usr/src/app
+      - .:/usr/src/tests
 

@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from decimal import Decimal
 from datetime import datetime
 from sqlalchemy import Column, Integer, Numeric, ForeignKey, TIMESTAMP
-from db.base import Base
+from app.db.base import Base
 
-from models import ResponseModel
+from app.models import ResponseModel
 
 
 class Transaction(Base):
@@ -21,19 +21,36 @@ class Transaction(Base):
     number_of_products = Column(Integer)
 
 
-class TransactionModel(BaseModel):
+class TransactionBaseModel(BaseModel):
     transaction_id: int
     date_create: datetime
+
+
+class TransactionAttributeModel(BaseModel):
     amount: Decimal
+    number_of_products: int
+
+
+class TransactionInsertModel(TransactionAttributeModel):
+    status_id: int
+    currency_type_id: int
+    customer_id: int
+    product_id: int
+
+
+class TransactionFullInsertModel(TransactionBaseModel, TransactionInsertModel):
+    pass
+
+
+class TransactionFullModel(TransactionBaseModel, TransactionAttributeModel):
     status_name: str
     currency_type_name: str
     customer_name: str
     product_name: str
-    number_of_products: int
 
 class TransactionResponseModel(ResponseModel):
-    transaction: typing.Optional[TransactionModel]
+    transaction: typing.Optional[TransactionFullModel|TransactionFullInsertModel]
 
 
 class TransactionListModel(ResponseModel):
-    transactions: list[TransactionModel]
+    transactions: list[TransactionFullModel]

@@ -3,3 +3,7 @@ sqlalchemy
 uvicorn
 fastapi
 starlette
+
+# dev
+pytest
+httpx

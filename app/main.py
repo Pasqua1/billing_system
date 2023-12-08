@@ -2,9 +2,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.errors import database_exception_handler, http_exception_handler, http422_error_handler
-from api.routes.api import router
-from api.responses import SERVICE_UNAVAILABLE
+from app.api.errors import database_exception_handler, http_exception_handler, http422_error_handler
+from app.api.routes.api import router
+from app.api.responses import SERVICE_UNAVAILABLE
 
 
 def make_app() -> FastAPI:

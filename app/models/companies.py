@@ -1,9 +1,9 @@
 import typing
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from db.base import Base
+from app.db.base import Base
 
-from models import ResponseModel
+from app.models import ResponseModel
 
 
 class Company(Base):
@@ -13,14 +13,21 @@ class Company(Base):
     company_name = Column(String)
 
 
-class CompanyModel(BaseModel):
+class CompanyBaseModel(BaseModel):
     company_id: int
+
+
+class CompanyInsertModel(BaseModel):
     company_name: str
 
 
+class CompanyFullModel(CompanyBaseModel,CompanyInsertModel):
+    pass
+
+
 class CompanyResponseModel(ResponseModel):
-    company: typing.Optional[CompanyModel]
+    company: typing.Optional[CompanyFullModel]
     
 
 class CompanyListModel(ResponseModel):
-    companies: list[CompanyModel]
+    companies: list[CompanyFullModel]

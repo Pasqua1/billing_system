@@ -1,13 +1,14 @@
 from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.transaction_statuses import TransactionStatus, TransactionStatusModel
+from app.models.transaction_statuses import TransactionStatus, TransactionStatusFullModel, \
+TransactionStatusInsertModel
 
 
-async def get_transaction_statuses(session: AsyncSession) -> list[TransactionStatusModel]:
+async def get_transaction_statuses(session: AsyncSession) -> list[TransactionStatusFullModel]:
     result = await session.execute(select(TransactionStatus))
     transaction_statuses = result.scalars().all()
     transaction_statuses = [
-        TransactionStatusModel(
+        TransactionStatusFullModel(
             status_id=status.status_id,
             status_name=status.status_name
         ) for status in transaction_statuses
@@ -15,8 +16,10 @@ async def get_transaction_statuses(session: AsyncSession) -> list[TransactionSta
     return transaction_statuses
 
 
-async def add_transaction_status(session: AsyncSession,
-                      transaction_status: TransactionStatusModel) -> TransactionStatus:
+async def add_transaction_status(
+        session: AsyncSession,
+        transaction_status: TransactionStatusInsertModel
+) -> TransactionStatus:
     result = await session.execute(
         insert(TransactionStatus).
         values(status_name=transaction_status.status_name).
