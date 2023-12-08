@@ -41,7 +41,7 @@ async def add_company(
     try:
         new_company = await queries.add_company(session, company)
     except IntegrityError as _:
-        detail = 'company with thit name already exists'
+        detail = 'company with this name already exists'
         return JSONResponse({'detail': 'error', 'message': detail},
                             status_code=status.HTTP_409_CONFLICT)
     try:
