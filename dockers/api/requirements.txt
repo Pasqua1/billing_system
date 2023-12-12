@@ -1,9 +1,9 @@
-asyncpg
-sqlalchemy
-uvicorn
-fastapi
-starlette
+asyncpg==0.29.0
+sqlalchemy==2.0.23
+uvicorn==0.24.0
+fastapi==0.104.1
+starlette==0.27.0
 
 # dev
-pytest
-httpx
+pytest==7.4.3
+httpx==0.25.2
