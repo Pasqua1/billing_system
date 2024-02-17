@@ -1,16 +1,7 @@
 import typing
-from pydantic import BaseModel
-from sqlalchemy import Column, String, Integer
-from app.db.base import Base
+from pydantic import BaseModel, ConfigDict
 
-from app.models import ResponseModel
-
-
-class CurrencyType(Base):
-    __tablename__ = "currency_types"
-
-    currency_type_id = Column(Integer, primary_key=True, autoincrement=True)
-    currency_type_name = Column(String)
+from app.usecase.utils.responses import ResponseModel
 
 
 class CurrencyTypeBaseModel(BaseModel):
@@ -22,7 +13,7 @@ class CurrencyTypeInsertModel(BaseModel):
 
 
 class CurrencyTypeFullModel(CurrencyTypeBaseModel, CurrencyTypeInsertModel):
-    pass
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CurrencyTypeResponseModel(ResponseModel):

@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Integer, UniqueConstraint
 from app.entity.base import Base
 
 
-class CurrencyTypes(Base):
+class CurrencyType(Base):
 
     __tablename__ = "currency_types"
 

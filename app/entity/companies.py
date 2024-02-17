@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Integer, UniqueConstraint
 from app.entity.base import Base
 
 
-class Companies(Base):
+class Company(Base):
 
     __tablename__ = "companies"
 

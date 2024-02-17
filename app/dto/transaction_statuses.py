@@ -1,16 +1,9 @@
 import typing
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from app.db.base import Base
+from app.service.database import Base
 
-from app.models import ResponseModel
-
-
-class TransactionStatus(Base):
-    __tablename__ = "transaction_statuses"
-
-    status_id = Column(Integer, primary_key=True, autoincrement=True)
-    status_name = Column(String)
+from app.usecase.utils.responses import ResponseModel
 
 
 class TransactionStatusBaseModel(BaseModel):

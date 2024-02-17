@@ -1,7 +1,10 @@
 from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.transaction_statuses import TransactionStatus, TransactionStatusFullModel, \
-TransactionStatusInsertModel
+from app.entity.transaction_statuses import TransactionStatus
+from app.dto.transaction_statuses import (
+    TransactionStatusFullModel,
+    TransactionStatusInsertModel
+)
 
 
 async def get_transaction_statuses(session: AsyncSession) -> list[TransactionStatusFullModel]:

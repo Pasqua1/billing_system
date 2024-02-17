@@ -1,14 +1,16 @@
-from sqlalchemy import select, insert, update
+from decimal import Decimal
 from fastapi import HTTPException, status
+from sqlalchemy import select, insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.products import Product, ProductInsertModel, ProductFullModel
-from app.models.currency_types import CurrencyType
-from app.models.companies import Company
+from app.entity.currency_types import CurrencyType
+from app.entity.companies import Company
+from app.entity.products import Product
+from app.dto.products import ProductInsertModel, ProductFullModel
 
 
 async def get_product(session: AsyncSession, product_id: int) -> ProductFullModel:
     result = await session.execute(select(Product, Company, CurrencyType).
-                                   where(Product.product_id==product_id).
+                                   where(Product.product_id == product_id).
                                    join(Company).
                                    join(CurrencyType))
     product = None
@@ -27,19 +29,19 @@ async def get_product(session: AsyncSession, product_id: int) -> ProductFullMode
     return product
 
 
-async def update_product_quantity(session: AsyncSession, 
-                                 product_id: int, 
-                                 new_quantity: int) -> Product:
+async def update_product_quantity(session: AsyncSession,
+                                  product_id: int,
+                                  new_quantity: int) -> Product:
     result = await session.execute(update(Product).
-                                where(Product.product_id==product_id).
-                                values(quantity=new_quantity).
-                                returning(Product))
+                                   where(Product.product_id == product_id).
+                                   values(quantity=new_quantity).
+                                   returning(Product))
     return result.scalar()
 
 
-async def get_products(session: AsyncSession, price: int) -> list[ProductFullModel]:
+async def get_products(session: AsyncSession, price: Decimal) -> list[ProductFullModel]:
     result = await session.execute(select(Product, CurrencyType, Company).
-                                   where(Product.price<=price).
+                                   where(Product.price <= price).
                                    join(CurrencyType).
                                    join(Company))
     products = []
@@ -58,10 +60,10 @@ async def get_products(session: AsyncSession, price: int) -> list[ProductFullMod
 
 async def add_product(session: AsyncSession, product: ProductInsertModel) -> Product:
     result = await session.execute(insert(Product).
-                                 values(product_name=product.product_name,
-                                        company_id=product.company_id,
-                                        price=product.price,
-                                        quantity=product.quantity,
-                                        currency_type_id=product.currency_type_id).
-                                 returning(Product))
+                                   values(product_name=product.product_name,
+                                          company_id=product.company_id,
+                                          price=product.price,
+                                          quantity=product.quantity,
+                                          currency_type_id=product.currency_type_id).
+                                   returning(Product))
     return result.scalar()

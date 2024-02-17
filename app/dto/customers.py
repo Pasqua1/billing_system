@@ -1,20 +1,8 @@
 import typing
 from pydantic import BaseModel
 from decimal import Decimal
-from sqlalchemy import Column, String, Integer, Numeric, ForeignKey
-from app.db.base import Base
 
-from app.models import ResponseModel
-
-
-class Customer(Base):
-    __tablename__ = "customers"
-
-    customer_id = Column(Integer, primary_key=True, autoincrement=True)
-    customer_name = Column(String)
-    company_id = Column(Integer, ForeignKey("companies.company_id"))
-    balance = Column(Numeric)
-    currency_type_id = Column(Integer, ForeignKey("currency_types.currency_type_id"))
+from app.usecase.utils.responses import ResponseModel
 
 
 class CustomerBaseModel(BaseModel):
@@ -41,7 +29,7 @@ class CustomerFullModel(CustomerBaseModel, CustomerAttributeModel):
 
 
 class CustomerResponseModel(ResponseModel):
-    customer: typing.Optional[CustomerFullModel|CustomerFullInsertModel]
+    customer: typing.Optional[CustomerFullModel | CustomerFullInsertModel]
 
 
 class CustomerListModel(ResponseModel):

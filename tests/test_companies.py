@@ -1,7 +1,7 @@
 import json
-from app.db.queries import companies as queries
+from app.service.queries import companies as queries
 
-from tests.test_main import *
+from tests.test_main import test_app
 
 
 def test_get_companies(test_app, monkeypatch):

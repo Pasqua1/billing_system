@@ -1,8 +1,8 @@
 import json
-from app.db.queries import customers as queries
-from app.models.customers import CustomerFullInsertModel
+from app.service.queries import customers as queries
+from app.dto.customers import CustomerFullInsertModel
 
-from tests.test_main import *
+from tests.test_main import test_app
 
 
 def test_get_customer(test_app, monkeypatch):

@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, Integer, UniqueConstraint, ForeignKey, \
 from app.entity.base import Base
 
 
-class Customers(Base):
+class Customer(Base):
     
     __tablename__= "customers"
 

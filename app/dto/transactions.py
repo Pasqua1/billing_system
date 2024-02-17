@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from decimal import Decimal
 from datetime import datetime
 from sqlalchemy import Column, Integer, Numeric, ForeignKey, TIMESTAMP
-from app.db.base import Base
+from app.service.database import Base
 
-from app.models import ResponseModel
+from app.usecase.utils.responses import ResponseModel
 
 
 class Transaction(Base):
@@ -48,8 +48,9 @@ class TransactionFullModel(TransactionBaseModel, TransactionAttributeModel):
     customer_name: str
     product_name: str
 
+
 class TransactionResponseModel(ResponseModel):
-    transaction: typing.Optional[TransactionFullModel|TransactionFullInsertModel]
+    transaction: typing.Optional[TransactionFullModel | TransactionFullInsertModel]
 
 
 class TransactionListModel(ResponseModel):

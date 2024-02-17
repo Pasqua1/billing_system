@@ -2,14 +2,15 @@ from sqlalchemy import select, insert, update
 from fastapi import HTTPException, status
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.customers import Customer, CustomerInsertModel, CustomerFullModel
-from app.models.companies import Company
-from app.models.currency_types import CurrencyType
+from app.entity.companies import Company
+from app.entity.currency_types import CurrencyType
+from app.entity.customers import Customer
+from app.dto.customers import CustomerInsertModel, CustomerFullModel
 
 
 async def get_customer(session: AsyncSession, customer_id: int) -> CustomerFullModel:
     result = await session.execute(select(Customer, Company, CurrencyType).
-                                   where(Customer.customer_id==customer_id).
+                                   where(Customer.customer_id == customer_id).
                                    join(Company).
                                    join(CurrencyType))
     customer = None
@@ -27,20 +28,20 @@ async def get_customer(session: AsyncSession, customer_id: int) -> CustomerFullM
     return customer
 
 
-async def update_customer_balance(session: AsyncSession, 
-                                 customer_id: int, 
-                                 new_balance: Decimal) -> Customer:
+async def update_customer_balance(session: AsyncSession,
+                                  customer_id: int,
+                                  new_balance: Decimal) -> Customer:
     result = await session.execute(update(Customer).
-                                where(Customer.customer_id==customer_id).
-                                values(balance=new_balance).
-                                returning(Customer))
+                                   where(Customer.customer_id == customer_id).
+                                   values(balance=new_balance).
+                                   returning(Customer))
     return result.scalar()
 
 
 async def get_company_customers(session: AsyncSession,
                                 company_id: int) -> list[CustomerFullModel]:
     result = await session.execute(select(Customer, Company, CurrencyType).
-                                   where(Customer.company_id==company_id).
+                                   where(Customer.company_id == company_id).
                                    join(Company).
                                    join(CurrencyType))
     customers = []

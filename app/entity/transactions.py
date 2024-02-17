@@ -4,7 +4,7 @@ from app.entity.base import Base
 from datetime import datetime
 
 
-class Transactions(Base):
+class Transaction(Base):
     
     __tablename__ = "transactions"
 

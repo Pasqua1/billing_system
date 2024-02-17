@@ -1,21 +1,25 @@
 from sqlalchemy import select, insert
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.transactions import Transaction, TransactionInsertModel, TransactionFullModel
-from app.models.products import Product
-from app.models.customers import Customer
-from app.models.transaction_statuses import TransactionStatus
-from app.models.currency_types import CurrencyType
+from app.entity.currency_types import CurrencyType
+from app.entity.customers import Customer
+from app.entity.products import Product
+from app.entity.transaction_statuses import TransactionStatus
+from app.dto.transactions import (
+    Transaction,
+    TransactionInsertModel,
+    TransactionFullModel
+)
 
 
-async def get_transaction_by_transaction_id(session: AsyncSession, transaction_id: int) -> Transaction:
+async def get_transaction_by_transaction_id(session: AsyncSession, transaction_id: int) -> TransactionFullModel:
     result = await session.execute(
         select(Transaction,
-                TransactionStatus,
-                CurrencyType,
-                Product,
-                Customer).
-        where(Transaction.transaction_id==transaction_id).
+               TransactionStatus,
+               CurrencyType,
+               Product,
+               Customer).
+        where(Transaction.transaction_id == transaction_id).
         where(Transaction.status_id == TransactionStatus.status_id).
         where(Transaction.currency_type_id == CurrencyType.currency_type_id).
         where(Transaction.product_id == Product.product_id).
@@ -42,10 +46,10 @@ async def get_transaction_by_transaction_id(session: AsyncSession, transaction_i
 async def get_transactions_of_customer(session: AsyncSession, customer_id: int) -> list[TransactionFullModel]:
     result = await session.execute(
         select(Transaction,
-                TransactionStatus,
-                CurrencyType,
-                Product,
-                Customer).
+               TransactionStatus,
+               CurrencyType,
+               Product,
+               Customer).
         where(Transaction.customer_id == customer_id).
         where(Transaction.status_id == TransactionStatus.status_id).
         where(Transaction.currency_type_id == CurrencyType.currency_type_id).
@@ -70,11 +74,11 @@ async def get_transactions_of_customer(session: AsyncSession, customer_id: int) 
 async def get_transactions_in_range(session: AsyncSession, amount: int) -> list[TransactionFullModel]:
     result = await session.execute(
         select(Transaction,
-                TransactionStatus,
-                CurrencyType,
-                Product,
-                Customer).
-        where(Transaction.amount<=amount).
+               TransactionStatus,
+               CurrencyType,
+               Product,
+               Customer).
+        where(Transaction.amount <= amount).
         where(Transaction.status_id == TransactionStatus.status_id).
         where(Transaction.currency_type_id == CurrencyType.currency_type_id).
         where(Transaction.product_id == Product.product_id).
@@ -94,13 +98,14 @@ async def get_transactions_in_range(session: AsyncSession, amount: int) -> list[
         transactions.append(transaction)
     return transactions
 
+
 async def add_payment(session: AsyncSession, transaction: TransactionInsertModel) -> Transaction:
     result = await session.execute(insert(Transaction).
-                                 values(amount=transaction.amount,
-                                        status_id=transaction.status_id,
-                                        currency_type_id=transaction.currency_type_id,
-                                        customer_id=transaction.customer_id,
-                                        product_id=transaction.product_id,
-                                        number_of_products=transaction.number_of_products).
-                                 returning(Transaction))
+                                   values(amount=transaction.amount,
+                                          status_id=transaction.status_id,
+                                          currency_type_id=transaction.currency_type_id,
+                                          customer_id=transaction.customer_id,
+                                          product_id=transaction.product_id,
+                                          number_of_products=transaction.number_of_products).
+                                   returning(Transaction))
     return result.scalar()
