@@ -17,7 +17,7 @@ from app.dto.transactions import (
 router = APIRouter()
 
 
-@router.get("/transaction", response_model=TransactionResponseModel,
+@router.get("/transactions", response_model=TransactionResponseModel,
             responses=HTTP_404_NOT_FOUND)
 async def get_transaction_by_transaction_id(
         transaction_id: int,

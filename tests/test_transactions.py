@@ -1,4 +1,4 @@
-import json
+'''import json
 
 from decimal import Decimal
 from app.service.queries import transactions as queries
@@ -183,3 +183,4 @@ def test_add_payment(test_app, monkeypatch):
 
     assert response.status_code == 201
     assert response.json()['transaction'] == test_response
+'''

@@ -16,7 +16,7 @@ from app.dto.products import (
 router = APIRouter()
 
 
-@router.get("/product", response_model=ProductListModel)
+@router.get("/products", response_model=ProductListModel)
 async def get_products(
         price: Decimal,
         session: AsyncSession = Depends(get_session)
@@ -28,7 +28,7 @@ async def get_products(
     return {'detail': 'success', 'products': products}
 
 
-@router.post("/product", status_code=status.HTTP_201_CREATED,
+@router.post("/products", status_code=status.HTTP_201_CREATED,
              response_model=ProductResponseModel, responses=HTTP_409_CONFLICT)
 async def add_product(
         product: ProductInsertModel,
@@ -38,5 +38,4 @@ async def add_product(
     Create product
     """
     new_product = await queries.add_product(session, product)
-    await session.commit()
     return {'detail': 'success', 'product': new_product}

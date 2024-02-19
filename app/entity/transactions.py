@@ -13,7 +13,7 @@ class Transaction(Base):
     amount = Column(Numeric(20,2), CheckConstraint('price>0'), nullable=False)
     currency_type_id = Column(Integer, ForeignKey("currency_types.currency_type_id"))
     status_id = Column(Integer, ForeignKey("transaction_statuses.status_id"))
-    company_id = Column(Integer, ForeignKey("companies.company_id"))
+    product_id = Column(Integer, ForeignKey("products.product_id"))
     customer_id = Column(Integer, ForeignKey("customers.customer_id"))
     created_at = Column(TIMESTAMP, default=datetime.now(), nullable=False)
     updated_at = Column(TIMESTAMP, default=datetime.now(), nullable=False)

@@ -6,6 +6,7 @@ from app.usecase.utils.responses import ResponseModel
 
 class CurrencyTypeBaseModel(BaseModel):
     currency_type_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CurrencyTypeInsertModel(BaseModel):
@@ -13,7 +14,7 @@ class CurrencyTypeInsertModel(BaseModel):
 
 
 class CurrencyTypeFullModel(CurrencyTypeBaseModel, CurrencyTypeInsertModel):
-    model_config = ConfigDict(from_attributes=True)
+    pass
 
 
 class CurrencyTypeResponseModel(ResponseModel):

@@ -2,12 +2,13 @@ asyncpg==0.29.0
 psycopg2-binary==2.9.9
 alembic==1.13.1
 sqlalchemy==2.0.23
+SQLAlchemy-Utils==0.41.1
 uvicorn==0.24.0
 fastapi==0.104.1
 starlette==0.27.0
 python-dotenv==0.21.0
 pydantic-settings==2.1.0
+yarl==1.9.4
 
 # dev
 pytest==7.4.3
-httpx==0.25.2

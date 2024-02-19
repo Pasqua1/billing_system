@@ -1,108 +1,54 @@
-import json
-from app.service.queries import customers as queries
-from app.dto.customers import CustomerFullInsertModel
+from decimal import Decimal
+from fastapi import status
 
-from tests.test_main import test_app
+from tests.utils import create_currency_type, create_company, create_customer
 
 
-def test_get_customer(test_app, monkeypatch):
-    test_data = {"customer_id": 1,
-                 "customer_name": "Paul",
-                 "company_name": "Yandex",
-                 "balance": '1000',
-                 "currency_type_name": "USD"}
+async def test_get_customer(client, create_customer):
+    customer_id = create_customer
 
-    async def mock_get_customer(db_session, customer_id):
-        return test_data
+    response = await client.get(f"/customers?customer_id={customer_id}")
+    assert response.status_code == status.HTTP_200_OK
+    assert customer_id == response.json()["customer"]["customer_id"]
 
-    monkeypatch.setattr(queries, "get_customer", mock_get_customer)
 
-    response = test_app.get("/customer?customer_id=1")
+async def test_update_balance(client, create_customer):
+    customer_id = create_customer
+
+    new_balance = Decimal(2000.00)
+
+    response = await client.patch(f"/customers?customer_id={customer_id}&new_balance={new_balance}")
+
     assert response.status_code == 200
-    assert response.json()['customer'] == test_data
+    assert 2000.00 == Decimal(response.json()["customer"]["balance"])
 
 
-def test_update_balance(test_app, monkeypatch):
-    test_customer = CustomerFullInsertModel(
-            customer_id=1,
-            customer_name="Paul",
-            company_id=1,
-            balance=1000,
-            currency_type_id=1
-        )
-    test_data = {"customer_id": 1,
-                 "customer_name": "Paul",
-                 "company_id": 1,
-                 "balance": '999',
-                 "currency_type_id": 1}
-
-    async def mock_get_customer(db_session, customer_id):
-        return test_customer
-
-    async def mock_update_customer_balance(db_session, customer_id, new_balance):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_customer", mock_get_customer)
-    monkeypatch.setattr(queries, "update_customer_balance", mock_update_customer_balance)
-
-    response = test_app.patch("/customer?customer_id=1&amount=1")
-    assert response.status_code == 200
-    assert response.json()['customer'] == test_data
+async def test_get_company_customers(client):
+    response = await client.get(f"/customers/company?company_id=99")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["customers"]) == 0
 
 
-def test_get_company_customers(test_app, monkeypatch):
-    test_data = [
-        {
-            "customer_id": 1,
-            "customer_name": "Paul",
-            "company_name": "Yandex",
-            "balance": '1000',
-            "currency_type_name": 'USD'
-        },
-        {
-            "customer_id": 2,
-            "customer_name": "Paul",
-            "company_name": "Yandex",
-            "balance": '2000',
-            "currency_type_name": 'USD'
-        },
-        {
-            "customer_id": 3,
-            "customer_name": "Paul",
-            "company_name": "Yandex",
-            "balance": '3000',
-            "currency_type_name": 'EUR'
-        }
-    ]
+async def test_add_customer(client, create_currency_type, create_company):
+    currency_type_id = create_currency_type
 
-    async def mock_get_company_customers(db_session, company_id):
-        return test_data
+    company_id = create_company
 
-    monkeypatch.setattr(queries, "get_company_customers", mock_get_company_customers)
+    customer = {"customer_name": "Alice",
+                "company_id": company_id,
+                "balance": '2000.00',
+                "currency_type_id": currency_type_id}
 
-    response = test_app.get("/customer/company?company_id=1")
-    assert response.status_code == 200
-    assert response.json()['customers'] == test_data
+    response = await client.post("/customers", json=customer)
 
+    assert response.status_code == status.HTTP_201_CREATED
 
-def test_add_customer(test_app, monkeypatch):
-    test_request = {"customer_name": "Paul",
-                    "company_id": 1,
-                    "balance": '1000',
-                    "currency_type_id": 1}
-    test_response = {"customer_id": 1,
-                     "customer_name": "Paul",
-                     "company_id": 1,
-                     "balance": '1000',
-                     "currency_type_id": 1}
+    customer_id = response.json()["customer"]["customer_id"]
 
-    async def mock_add_customer(db_session, test_request):
-        return test_response
-
-    monkeypatch.setattr(queries, "add_customer", mock_add_customer)
-
-    response = test_app.post("/customer",
-                             content=json.dumps(test_request))
-
-    assert response.status_code == 201
-    assert response.json()['customer'] == test_response
+    response = await client.get(f"/customers?customer_id={customer_id}")
+    assert response.status_code == status.HTTP_200_OK
+    assert customer_id == response.json()["customer"]["customer_id"]
+    assert customer["customer_name"] == response.json()["customer"]["customer_name"]
+    assert customer["company_id"] == response.json()["customer"]["company_id"]
+    assert customer["balance"] == response.json()["customer"]["balance"]
+    assert customer["currency_type_id"] == response.json()["customer"]["currency_type_id"]

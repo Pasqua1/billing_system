@@ -34,5 +34,4 @@ async def add_company(
     Create company
     """
     new_company = await queries.add_company(session, company)
-    await session.commit()
     return {'detail': 'success', 'company': new_company}

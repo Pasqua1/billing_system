@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy import MetaData
-from sqlalchemy.ext.declarative import as_declarative
+from sqlalchemy.orm import as_declarative
 
 convention = {
     "all_column_names": lambda constraint, table: "_".join(

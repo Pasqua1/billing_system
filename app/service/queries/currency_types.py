@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dto.currency_types import CurrencyTypeFullModel, CurrencyTypeInsertModel

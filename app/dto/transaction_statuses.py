@@ -1,5 +1,5 @@
 import typing
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Column, String, Integer
 from app.service.database import Base
 
@@ -8,6 +8,7 @@ from app.usecase.utils.responses import ResponseModel
 
 class TransactionStatusBaseModel(BaseModel):
     status_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TransactionStatusInsertModel(BaseModel):

@@ -6,7 +6,7 @@ from app.entity.base import Base
 
 class Customer(Base):
     
-    __tablename__= "customers"
+    __tablename__ = "customers"
 
     __table_args__ = (
         UniqueConstraint('customer_name'),

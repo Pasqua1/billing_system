@@ -1,5 +1,4 @@
-import typing
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 
 from app.usecase.utils.responses import ResponseModel
@@ -7,6 +6,7 @@ from app.usecase.utils.responses import ResponseModel
 
 class CustomerBaseModel(BaseModel):
     customer_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CustomerAttributeModel(BaseModel):
@@ -23,14 +23,9 @@ class CustomerFullInsertModel(CustomerBaseModel, CustomerInsertModel):
     pass
 
 
-class CustomerFullModel(CustomerBaseModel, CustomerAttributeModel):
-    company_name: str
-    currency_type_name: str
-
-
 class CustomerResponseModel(ResponseModel):
-    customer: typing.Optional[CustomerFullModel | CustomerFullInsertModel]
+    customer: CustomerFullInsertModel
 
 
 class CustomerListModel(ResponseModel):
-    customers: list[CustomerFullModel]
+    customers: list[CustomerFullInsertModel]

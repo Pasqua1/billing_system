@@ -36,5 +36,4 @@ async def add_transaction_status(
     Create transaction status
     """
     new_status = await queries.add_transaction_status(session, transaction_status)
-    await session.commit()
     return {'detail': 'success', 'transaction_status': new_status}

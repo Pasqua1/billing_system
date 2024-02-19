@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.entity.currency_types import CurrencyType
 from app.entity.customers import Customer
 from app.entity.products import Product
+from app.entity.transactions import Transaction
 from app.entity.transaction_statuses import TransactionStatus
 from app.dto.transactions import (
-    Transaction,
     TransactionInsertModel,
     TransactionFullModel
 )

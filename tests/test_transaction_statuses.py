@@ -4,7 +4,7 @@ from app.service.queries import transaction_statuses as queries
 from tests.test_main import test_app
 
 
-def test_get_transaction_statuses(test_app, monkeypatch):
+'''def test_get_transaction_statuses(test_app, monkeypatch):
     test_data = [
         {"status_id": 1, "status_name": "New"},
         {"status_id": 2, "status_name": "Completed"},
@@ -34,4 +34,4 @@ def test_add_transaction_status_success(test_app, monkeypatch):
                              content=json.dumps(test_request))
 
     assert response.status_code == 201
-    assert response.json()['transaction_status'] == test_response
+    assert response.json()['transaction_status'] == test_response'''

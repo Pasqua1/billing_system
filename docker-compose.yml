@@ -16,7 +16,7 @@ services:
   fastapi:
     links:
       - postgres
-    container_name: "app"
+    container_name: "fastapi"
     build: ./dockers/api
     ports:
       - "8808:8808"

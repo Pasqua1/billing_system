@@ -34,6 +34,5 @@ async def add_currency_type(
     Create currency type
     """
     new_currency_type = await queries.add_currency_type(session, currency_type)
-    await session.commit()
     return {'detail': 'success', 'currency_type': new_currency_type}
 
