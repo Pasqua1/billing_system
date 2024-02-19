@@ -47,7 +47,8 @@ async def update_balance(
     return {'detail': 'success', 'customer': customer}
 
 
-@router.get("/customers/company", response_model=CustomerListModel)
+@router.get("/customers/company", response_model=CustomerListModel,
+            responses=(HTTP_404_NOT_FOUND | HTTP_409_CONFLICT))
 async def get_company_customers(
         company_id: int,
         session: AsyncSession = Depends(get_session)
@@ -68,5 +69,8 @@ async def add_customer(
     """
     Create customer
     """
+    if customer.balance < 0:
+        raise HTTPException(detail=f'balance should not be less than 0',
+                            status_code=status.HTTP_409_CONFLICT)
     new_customer = await queries.add_customer(session, customer)
     return {'detail': 'success', 'customer': new_customer}
