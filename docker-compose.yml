@@ -22,7 +22,4 @@ services:
       - "8808:8808"
     volumes:
       - ./app:/usr/src/app
-      - .:/usr/src/tests
-      - ./migrations:/usr/src/migrations
-      - ./alembic.ini:/usr/src/alembic.ini
-      - ./.env:/usr/src/.env
+      - .:/usr/src
