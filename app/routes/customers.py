@@ -37,6 +37,9 @@ async def update_balance(
     """
     Set the customer's new balance
     """
+    if new_balance < 0:
+        raise HTTPException(detail=f'new_balance should not be less than 0',
+                            status_code=status.HTTP_409_CONFLICT)
     customer = await queries.update_customer_balance(session, customer_id,
                                                      new_balance)
     if customer is None:

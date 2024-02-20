@@ -10,5 +10,4 @@ python-dotenv==0.21.0
 pydantic-settings==2.1.0
 yarl==1.9.4
 
-# dev
 pytest==7.4.3

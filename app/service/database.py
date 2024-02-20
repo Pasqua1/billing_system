@@ -68,7 +68,6 @@ class DatabaseSessionManager:
 
 
 db_manager = DatabaseSessionManager()
-db_manager.init(settings.DATABASE_URL)
 
 Base = declarative_base()
 
