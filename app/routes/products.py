@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from starlette.responses import JSONResponse
 from decimal import Decimal
 from app.service.database import get_session
 from app.service.queries import products as queries

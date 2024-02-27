@@ -1,4 +1,3 @@
-import typing
 from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 from datetime import datetime
@@ -8,36 +7,33 @@ from app.usecase.utils.responses import ResponseModel
 
 class TransactionBaseModel(BaseModel):
     transaction_id: int
-    model_config = ConfigDict(from_attributes=True)
 
 
 class TransactionAttributeModel(BaseModel):
-    amount: Decimal
+    status_id: int = 1
+    amount: Decimal = 0
+    currency_type_id: int = 0
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+
+
+class TransactionInsertModel(BaseModel):
     quantity: int
-    created_at: datetime
-    updated_at: datetime
-
-
-class TransactionInsertModel(TransactionAttributeModel):
-    status_id: int
-    currency_type_id: int
     customer_id: int
     product_id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
-class TransactionFullInsertModel(TransactionBaseModel, TransactionInsertModel):
+class TransactionFullInsertModel(TransactionInsertModel, TransactionAttributeModel):
     pass
 
 
-class TransactionFullModel(TransactionBaseModel, TransactionAttributeModel):
-    status_name: str
-    currency_type_name: str
-    customer_name: str
-    product_name: str
+class TransactionFullModel(TransactionAttributeModel, TransactionInsertModel):
+    pass
 
 
 class TransactionResponseModel(ResponseModel):
-    transaction: typing.Optional[TransactionFullModel | TransactionFullInsertModel]
+    transaction: TransactionFullModel
 
 
 class TransactionListModel(ResponseModel):

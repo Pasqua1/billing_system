@@ -1,7 +1,7 @@
+from datetime import datetime
 from fastapi import APIRouter
-from fastapi import Depends, Path, status
+from fastapi import Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 from app.service.database import get_session
 from app.service.queries import transactions as queries
@@ -11,7 +11,7 @@ from app.usecase.utils.response import HTTP_409_CONFLICT, HTTP_404_NOT_FOUND
 
 from app.dto.transactions import (
     TransactionInsertModel, TransactionListModel,
-    TransactionResponseModel
+    TransactionResponseModel, TransactionFullInsertModel
 )
 
 router = APIRouter()
@@ -43,7 +43,7 @@ async def get_transactions_of_customer(
     return {'detail': 'success', 'transactions': transactions}
 
 
-@router.get("/transactions", response_model=TransactionListModel)
+@router.get("/transactions/amount", response_model=TransactionListModel)
 async def get_transaction_in_range(
         amount: int,
         session: AsyncSession = Depends(get_session)
@@ -65,21 +65,26 @@ async def add_payment(
     """
     Create payment
     """
+    full_payment = TransactionFullInsertModel(**payment.dict())
     customer = await customers_queries.get_customer(session, payment.customer_id)
     product = await products_queries.get_product(session, payment.product_id)
 
-    if customer.currency_type_name != product.currency_type_name:
-        detail = f'currecy type of customer doesn\'t match with product currecny type'
+    if customer.currency_type_id != product.currency_type_id:
+        detail = f'currency_type of customer doesn\'t match with product currency_type'
         return JSONResponse({'detail': 'error', 'message': detail},
                             status_code=status.HTTP_409_CONFLICT)
 
-    new_balance = customer.balance - payment.amount
+    full_payment.currency_type_id = product.currency_type_id
+    full_payment.amount = product.price * full_payment.quantity
+
+    new_balance = customer.balance - full_payment.amount
     await customers_queries.update_customer_balance(session, payment.customer_id, new_balance)
 
-    new_quantity = product.quantity - payment.number_of_products
+    new_quantity = product.quantity - full_payment.quantity
     await products_queries.update_product_quantity(session, payment.product_id, new_quantity)
 
-    new_payment = await queries.add_payment(session, payment)
+    full_payment.created_at = full_payment.updated_at = datetime.now()
 
-    await session.commit()
+    new_payment = await queries.add_payment(session, full_payment)
+
     return {'detail': 'success', 'transaction': new_payment}

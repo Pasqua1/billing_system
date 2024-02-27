@@ -1,4 +1,3 @@
-import typing
 from pydantic import BaseModel, ConfigDict
 
 from app.usecase.utils.responses import ResponseModel
@@ -18,7 +17,7 @@ class CompanyFullModel(CompanyBaseModel, CompanyInsertModel):
 
 
 class CompanyResponseModel(ResponseModel):
-    company: typing.Optional[CompanyFullModel]
+    company: CompanyFullModel
 
 
 class CompanyListModel(ResponseModel):

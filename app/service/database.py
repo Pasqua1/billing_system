@@ -1,7 +1,5 @@
 from sqlalchemy.orm import declarative_base
 
-from app.config import settings
-
 import contextlib
 from typing import AsyncIterator, Optional
 

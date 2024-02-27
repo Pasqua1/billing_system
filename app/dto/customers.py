@@ -19,13 +19,13 @@ class CustomerInsertModel(CustomerAttributeModel):
     currency_type_id: int
 
 
-class CustomerFullInsertModel(CustomerBaseModel, CustomerInsertModel):
+class CustomerFullModel(CustomerBaseModel, CustomerInsertModel):
     pass
 
 
 class CustomerResponseModel(ResponseModel):
-    customer: CustomerFullInsertModel
+    customer: CustomerFullModel
 
 
 class CustomerListModel(ResponseModel):
-    customers: list[CustomerFullInsertModel]
+    customers: list[CustomerFullModel]

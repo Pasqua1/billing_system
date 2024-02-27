@@ -1,73 +1,78 @@
-import json
-from app.service.queries import products as queries
+from fastapi import status
 
-from tests.test_main import test_app
-
-
-'''def test_get_products(test_app, monkeypatch):
-    test_data = [
-        {
-            "product_id": 1,
-            "product_name": "Cakes",
-            "company_name": "Yandex",
-            "price": '1000',
-            "quantity": 30,
-            "currency_type_name": 'USD'
-        },
-        {
-            "product_id": 2,
-            "product_name": "Cookies",
-            "company_name": "Yandex",
-            "price": '20',
-            "quantity": 2000,
-            "currency_type_name": 'USD'
-        },
-        {
-            "product_id": 3,
-            "product_name": "Candies",
-            "company_name": "Yandex",
-            "price": '10',
-            "quantity": 3000,
-            "currency_type_name": 'USD'
-        }
-    ]
-
-    price = '4000'
-
-    async def mock_get_products(db_session, price):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_products", mock_get_products)
-
-    response = test_app.get("/product?price=4000")
-    assert response.status_code == 200
-    assert response.json()['products'] == test_data
+from tests.utils import create_currency_type, create_company, create_product
 
 
-def test_add_product(test_app, monkeypatch):
-    test_request = {
-            "product_name": "Cakes",
-            "company_id": 1,
-            "price": '1000',
-            "quantity": 3000,
-            "currency_type_id": 1
-        }
-    test_response = {
-            "product_id": 1,
-            "product_name": "Cakes",
-            "company_id": 1,
-            "price": '1000',
-            "quantity": 3000,
-            "currency_type_id": 1
-        }
+async def test_add_product(client, create_currency_type, create_company):
+    currency_type_id = create_currency_type
 
-    async def mock_add_product(db_session, test_request):
-        return test_response
+    company_id = create_company
 
-    monkeypatch.setattr(queries, "add_product", mock_add_product)
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": "1000.00",
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
 
-    response = test_app.post("/product",
-                             content=json.dumps(test_request))
+    response = await client.post("/products", json=product)
 
-    assert response.status_code == 201
-    assert response.json()['product'] == test_response'''
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["product"]["product_name"] == product["product_name"]
+    assert response.json()["product"]["company_id"] == product["company_id"]
+    assert response.json()["product"]["price"] == product["price"]
+    assert response.json()["product"]["quantity"] == product["quantity"]
+    assert response.json()["product"]["currency_type_id"] == product["currency_type_id"]
+
+
+async def test_add_product_negative_price_http_409_conflict(
+        client,
+        create_currency_type,
+        create_company
+):
+    currency_type_id = create_currency_type
+
+    company_id = create_company
+
+    detail = "price should not be less than 0"
+
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": "-1000.00",
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
+
+    response = await client.post("/products", json=product)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail
+
+
+async def test_add_product_negative_quantity_http_409_conflict(
+        client,
+        create_currency_type,
+        create_company
+):
+    currency_type_id = create_currency_type
+
+    company_id = create_company
+
+    detail = "quantity should not be less than 0"
+
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": "1000.00",
+               "quantity": -30,
+               "currency_type_id": currency_type_id}
+
+    response = await client.post("/products", json=product)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail
+
+
+async def test_get_products(client, create_product):
+    _ = create_product
+    price = 2000
+    response = await client.get(f"/products?price={price}")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["products"]) == 1

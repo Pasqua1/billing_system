@@ -1,4 +1,3 @@
-import typing
 from pydantic import BaseModel, ConfigDict
 
 from app.usecase.utils.responses import ResponseModel
@@ -18,7 +17,7 @@ class CurrencyTypeFullModel(CurrencyTypeBaseModel, CurrencyTypeInsertModel):
 
 
 class CurrencyTypeResponseModel(ResponseModel):
-    currency_type: typing.Optional[CurrencyTypeFullModel]
+    currency_type: CurrencyTypeFullModel
 
 
 class CurrencyTypeListModel(ResponseModel):

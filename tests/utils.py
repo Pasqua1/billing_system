@@ -26,3 +26,17 @@ async def create_customer(client, create_currency_type, create_company):
                                        "currency_type_id": currency_type_id})
     new_customer_id = response.json()["customer"]["customer_id"]
     return new_customer_id
+
+
+@pytest.fixture()
+async def create_product(client, create_currency_type, create_company):
+    currency_type_id = create_currency_type
+    company_id = create_company
+    response = await client.post("/products",
+                                 json={"product_name": "Cakes",
+                                       "company_id": company_id,
+                                       "price": "1000.00",
+                                       "quantity": 30,
+                                       "currency_type_id": currency_type_id})
+    new_product_id = response.json()["product"]["product_id"]
+    return new_product_id

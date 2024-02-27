@@ -1,8 +1,4 @@
-import typing
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Column, String, Integer
-from app.service.database import Base
-
 from app.usecase.utils.responses import ResponseModel
 
 
@@ -20,7 +16,7 @@ class TransactionStatusFullModel(TransactionStatusBaseModel, TransactionStatusIn
 
 
 class TransactionStatusResponseModel(ResponseModel):
-    transaction_status: typing.Optional[TransactionStatusFullModel]
+    transaction_status: TransactionStatusFullModel
 
 
 class TransactionStatusListModel(ResponseModel):
