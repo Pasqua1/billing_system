@@ -6,6 +6,13 @@ You must have docker and docker-compose tools installed to work with material in
 docker compose build
 docker compose up
 ```
+
+To generate migrations and update database run:
+```
+docker compose exec fastapi alembic revision --autogenerate -m "Added required tables"
+docker compose exec fastapi alembic upgrade head
+```
+
 ## Run tests
 Tests for this project are defined in the tests/ folder.
 To run all the tests of a project, simply run the pytest command:

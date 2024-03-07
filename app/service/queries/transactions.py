@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.entity.customers import Customer
 from app.entity.transactions import Transaction
 from app.dto.transactions import (
     TransactionInsertModel,
@@ -13,7 +12,7 @@ async def get_transaction_by_transaction_id(
         session: AsyncSession,
         transaction_id: int
 ) -> TransactionFullModel:
-    transaction = await session.get(Customer, transaction_id)
+    transaction = await session.get(Transaction, transaction_id)
     if transaction is None:
         raise HTTPException(detail=f"transaction with id={transaction_id} not found",
                             status_code=status.HTTP_404_NOT_FOUND)

@@ -1,5 +1,4 @@
-from sqlalchemy import Column, String, Integer, UniqueConstraint, ForeignKey, \
-    Numeric
+from sqlalchemy import Column, String, Integer, UniqueConstraint, ForeignKey, Numeric
 
 from app.entity.base import Base
 
@@ -17,4 +16,6 @@ class Product(Base):
     company_id = Column(Integer, ForeignKey("companies.company_id"), nullable=False)
     price = Column(Numeric(20,2), nullable=False)
     quantity = Column(Integer, nullable=False)
-    currency_type_id = Column(Integer, ForeignKey("currency_types.currency_type_id"), nullable=False)
+    currency_type_id = Column(Integer,
+                              ForeignKey("currency_types.currency_type_id"),
+                              nullable=False)

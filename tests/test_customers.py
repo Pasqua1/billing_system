@@ -62,7 +62,7 @@ async def test_add_customer(client, create_currency_type, create_company):
 
     customer = {"customer_name": "Alice",
                 "company_id": company_id,
-                "balance": "2000.00",
+                "balance": 2000.00,
                 "currency_type_id": currency_type_id}
 
     response = await client.post("/customers", json=customer)
@@ -70,7 +70,7 @@ async def test_add_customer(client, create_currency_type, create_company):
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["customer"]["customer_name"] == customer["customer_name"]
     assert response.json()["customer"]["company_id"] == customer["company_id"]
-    assert response.json()["customer"]["balance"] == customer["balance"]
+    assert float(response.json()["customer"]["balance"]) == customer["balance"]
     assert response.json()["customer"]["currency_type_id"] == customer["currency_type_id"]
 
 

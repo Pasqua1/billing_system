@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from decimal import Decimal
 from app.service.database import get_session
 from app.service.queries import products as queries
-from app.usecase.utils.response import HTTP_409_CONFLICT
+from app.usecase.utils.response import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from app.dto.products import (
     ProductInsertModel, ProductListModel,
@@ -14,7 +14,20 @@ from app.dto.products import (
 router = APIRouter()
 
 
-@router.get("/products", response_model=ProductListModel)
+@router.get("/products", response_model=ProductResponseModel,
+            responses=HTTP_404_NOT_FOUND)
+async def get_customer(
+        product_id: int,
+        session: AsyncSession = Depends(get_session)
+):
+    """
+    Get product
+    """
+    product = await queries.get_product(session, product_id)
+    return {'detail': 'success', 'product': product}
+
+
+@router.get("/products/price", response_model=ProductListModel)
 async def get_products(
         price: Decimal,
         session: AsyncSession = Depends(get_session)

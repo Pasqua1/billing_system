@@ -1,4 +1,3 @@
-import sqlalchemy as sa
 from sqlalchemy import MetaData
 from sqlalchemy.orm import as_declarative
 

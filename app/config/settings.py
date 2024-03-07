@@ -20,5 +20,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
 load_dotenv('.env')
 settings.DATABASE_URL = os.getenv("DATABASE_URL")

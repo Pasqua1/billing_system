@@ -1,37 +1,31 @@
-import json
-from app.service.queries import transaction_statuses as queries
+from fastapi import status
 
-from tests.test_main import test_app
-
-
-'''def test_get_transaction_statuses(test_app, monkeypatch):
-    test_data = [
-        {"status_id": 1, "status_name": "New"},
-        {"status_id": 2, "status_name": "Completed"},
-        {"status_id": 3, "status_name": "Rejected"}
-    ]
-
-    async def mock_get_transaction_statuses(db_session):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_transaction_statuses", mock_get_transaction_statuses)
-
-    response = test_app.get("/transaction_statuses")
-    assert response.status_code == 200
-    assert response.json()['transaction_statuses'] == test_data
+from tests.utils import create_transaction_status
 
 
-def test_add_transaction_status_success(test_app, monkeypatch):
-    test_request = {"status_name": "Pending"}
-    test_response = {"status_id": 3, "status_name": "Pending"}
+async def test_get_company_customers(client, create_transaction_status):
+    _ = create_transaction_status
+    response = await client.get("/transaction_statuses")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["transaction_statuses"]) == 1
 
-    async def mock_add_transaction_status(db_session, test_request):
-        return test_response
 
-    monkeypatch.setattr(queries, "add_transaction_status", mock_add_transaction_status)
+async def test_add_company(client):
+    transaction_status = {"status_name": "NEW"}
 
-    response = test_app.post("/transaction_statuses",
-                             content=json.dumps(test_request))
+    response = await client.post("/transaction_statuses", json=transaction_status)
 
-    assert response.status_code == 201
-    assert response.json()['transaction_status'] == test_response'''
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["transaction_status"]["status_name"] == transaction_status["status_name"]
+
+
+async def test_add_company_http_409_conflict(client, create_transaction_status):
+    _ = create_transaction_status
+
+    transaction_status = {"status_name": "NEW"}
+    detail = 'Key (status_name)=(NEW) already exists'
+
+    response = await client.post("/transaction_statuses", json=transaction_status)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail

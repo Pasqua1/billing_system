@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from starlette.responses import JSONResponse
 from app.service.database import get_session
 from app.service.queries import companies as queries
 from app.usecase.utils.response import HTTP_409_CONFLICT

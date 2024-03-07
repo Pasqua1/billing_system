@@ -1,36 +1,31 @@
-import json
-from app.service.queries import companies as queries
+from fastapi import status
 
-from tests.test_main import test_app
-
-
-'''def test_get_companies(test_app, monkeypatch):
-    test_data = [
-        {"company_id": 1, "company_name": "Yandex"},
-        {"company_id": 2, "company_name": "Google"}
-    ]
-
-    async def mock_get_companies(db_session):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_companies", mock_get_companies)
-
-    response = test_app.get("/companies")
-    assert response.status_code == 200
-    assert response.json()['companies'] == test_data
+from tests.utils import create_company
 
 
-def test_add_company(test_app, monkeypatch):
-    test_request = {"company_name": "IKEA"}
-    test_response = {"company_id": 3, "company_name": "IKEA"}
+async def test_get_company_customers(client, create_company):
+    _ = create_company
+    response = await client.get("/companies")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["companies"]) == 1
 
-    async def mock_add_company(db_session, test_request):
-        return test_response
 
-    monkeypatch.setattr(queries, "add_company", mock_add_company)
+async def test_add_company(client):
+    company = {"company_name": "Google"}
 
-    response = test_app.post("/companies",
-                             content=json.dumps(test_request))
+    response = await client.post("/companies", json=company)
 
-    assert response.status_code == 201
-    assert response.json()['company'] == test_response'''
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["company"]["company_name"] == company["company_name"]
+
+
+async def test_add_company_http_409_conflict(client, create_company):
+    _ = create_company
+
+    company = {"company_name": "Google"}
+    detail = 'Key (company_name)=(Google) already exists'
+
+    response = await client.post("/companies", json=company)
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail

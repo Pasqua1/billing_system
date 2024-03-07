@@ -10,7 +10,7 @@ class TransactionBaseModel(BaseModel):
 
 
 class TransactionAttributeModel(BaseModel):
-    status_id: int = 1
+    status_id: int = 0
     amount: Decimal = 0
     currency_type_id: int = 0
     created_at: datetime = datetime.now()
@@ -28,7 +28,7 @@ class TransactionFullInsertModel(TransactionInsertModel, TransactionAttributeMod
     pass
 
 
-class TransactionFullModel(TransactionAttributeModel, TransactionInsertModel):
+class TransactionFullModel(TransactionBaseModel, TransactionInsertModel):
     pass
 
 

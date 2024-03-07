@@ -1,186 +1,186 @@
-'''import json
+from fastapi import status
 
-from decimal import Decimal
-from app.service.queries import transactions as queries
-from app.service.queries import customers as customers_queries
-from app.service.queries import products as products_queries
-from app.dto.products import ProductFullModel
-from app.dto.customers import CustomerFullModel
-
-from tests.test_main import *
+from tests.utils import (
+    create_transaction_status,
+    create_currency_type,
+    create_company,
+    create_payment
+)
 
 
-def test_get_transaction_by_transaction_id(test_app, monkeypatch):
-    test_data = {"transaction_id": 1,
-                 "date_create": "2023-12-08T07:45:45.149000Z",
-                 "amount": "450",
-                 "status_name": 'New',
-                 "currency_type_name": "USD",
-                 "customer_name": "Paul",
-                 "product_name": 'Cookies',
-                 "number_of_products": 15}
-
-    async def mock_get_transaction_by_transaction_id(db_session, transaction_id):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_transaction_by_transaction_id", mock_get_transaction_by_transaction_id)
-
-    response = test_app.get("/transaction?transaction_id=1")
-    assert response.status_code == 200
-    assert response.json()['transaction'] == test_data
+async def test_get_transaction(client, create_payment):
+    transaction_id = create_payment
+    response = await client.get(f"/transactions?transaction_id={transaction_id}")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["transaction"]["transaction_id"] == transaction_id
 
 
-def test_get_transactions_of_customer(test_app, monkeypatch):
-    test_data = [
-        {
-            "transaction_id": 1,
-            "date_create": "2023-12-07T07:45:45.149000Z",
-            "amount": "300",
-            "status_name": 'New',
-            "currency_type_name": "USD",
-            "customer_name": "Paul",
-            "product_name": 'Cookies',
-            "number_of_products": 10
-        },
-        {
-            "transaction_id": 2,
-            "date_create": "2023-12-08T07:45:45.149000Z",
-            "amount": "450",
-            "status_name": 'New',
-            "currency_type_name": "USD",
-            "customer_name": "Paul",
-            "product_name": 'Cookies',
-            "number_of_products": 15
-        },
-        {
-            "transaction_id": 3,
-            "date_create": "2023-12-06T07:45:45.149000Z",
-            "amount": "600",
-            "status_name": 'New',
-            "currency_type_name": "USD",
-            "customer_name": "Paul",
-            "product_name": 'Cookies',
-            "number_of_products": 20
-        }
-    ]
-
-    async def mock_get_transactions_of_customer(db_session, customer_id):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_transactions_of_customer", mock_get_transactions_of_customer)
-
-    response = test_app.get("/transactions/customer?customer_id=1")
-    assert response.status_code == 200
-    assert response.json()['transactions'] == test_data
+async def test_get_transactions_of_customer(client, create_payment):
+    customer_id = 0
+    response = await client.get(f"/transactions/customer?customer_id={customer_id}")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["transactions"]) == 0
 
 
-def test_get_transaction_in_range(test_app, monkeypatch):
-    test_data = [
-        {
-            "transaction_id": 1,
-            "date_create": "2023-12-07T07:45:45.149000Z",
-            "amount": "300",
-            "status_name": 'New',
-            "currency_type_name": "USD",
-            "customer_name": "Paul",
-            "product_name": 'Cookies',
-            "number_of_products": 10
-        },
-        {
-            "transaction_id": 2,
-            "date_create": "2023-12-08T07:45:45.149000Z",
-            "amount": "450",
-            "status_name": 'New',
-            "currency_type_name": "USD",
-            "customer_name": "Paul",
-            "product_name": 'Cookies',
-            "number_of_products": 15
-        }
-    ]
-
-    async def mock_get_transaction_in_range(db_session, amount):
-        return test_data
-
-    monkeypatch.setattr(queries, "get_transactions_in_range", mock_get_transaction_in_range)
-
-    response = test_app.get("/transactions?amount=500")
-    assert response.status_code == 200
-    assert response.json()['transactions'] == test_data
+async def test_get_transactions_in_amount(client, create_payment):
+    amount = 1000
+    _ = create_payment
+    response = await client.get(f"/transactions/amount?amount={amount}")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["transactions"]) == 1
 
 
-def test_add_payment(test_app, monkeypatch):
-    test_request = {
-        "amount": "450",
-        "status_id": 1,
-        "currency_type_id": 1,
-        "customer_id": 1,
-        "product_id": 1,
-        "number_of_products": 15
-    }
-    test_response = {
-        "transaction_id": 2,
-        "date_create": "2023-12-08T07:45:45.149000Z",
-        "amount": "450",
-        "status_id": 1,
-        "currency_type_id": 1,
-        "customer_id": 1,
-        "product_id": 1,
-        "number_of_products": 15
-    }
-    test_customer = CustomerFullModel(
-        customer_id=1,
-        customer_name="Paul",
-        company_name="Yandex",
-        balance=Decimal(1000),
-        currency_type_name="USD"
-    )
+async def test_add_payment(
+        client,
+        create_transaction_status,
+        create_currency_type,
+        create_company
+):
+    _ = create_transaction_status
+    currency_type_id = create_currency_type
+    company_id = create_company
 
-    test_customer_data = {"customer_id": 1,
-                          "customer_name": "Paul",
-                          "company_name": "Yandex",
-                          "balance": '999',
-                          "currency_type_name": "USD"}
+    customer = {"customer_name": "Alex",
+                "company_id": company_id,
+                "balance": 1000,
+                "currency_type_id": currency_type_id}
+    response = await client.post("/customers", json=customer)
+    customer_id = response.json()["customer"]["customer_id"]
 
-    test_product = ProductFullModel(
-        product_id=1,
-        product_name="Paul",
-        company_name="Yandex",
-        price=Decimal(1000),
-        quantity=1000,
-        currency_type_name="USD"
-    )
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": 10,
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
+    response = await client.post("/products", json=product)
+    product_id = response.json()["product"]["product_id"]
 
-    test_product_data = {"product_id": 1,
-                         "product_name": "Paul",
-                         "company_name": "Yandex",
-                         "price": '999',
-                         "quantity": 15,
-                         "currency_type_name": "USD"}
+    transaction = {"quantity": 4,
+                   "customer_id": customer_id,
+                   "product_id": product_id}
 
-    async def mock_get_customer(db_session, customer_id):
-        return test_customer
+    response = await client.post("/payment", json=transaction)
 
-    async def mock_get_product(db_session, product_id):
-        return test_product
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["transaction"]["quantity"] == transaction["quantity"]
+    assert response.json()["transaction"]["customer_id"] == transaction["customer_id"]
+    assert response.json()["transaction"]["product_id"] == transaction["product_id"]
 
-    async def mock_update_customer_balance(db_session, customer_id, new_balance):
-        return test_customer_data
+    response = await client.get(f"/customers?customer_id={customer_id}")
+    new_balance = float(customer["balance"] - product["price"] * transaction["quantity"])
+    response_balance = float(response.json()["customer"]["balance"])
+    assert response_balance == new_balance
 
-    async def mock_update_product_quantity(db_session, product_id, new_quantity):
-        return test_product_data
+    response = await client.get(f"/products?product_id={product_id}")
+    new_quantity = product["quantity"] - transaction["quantity"]
+    assert response.json()["product"]["quantity"] == new_quantity
 
-    async def mock_add_payment(db_session, test_request):
-        return test_response
 
-    monkeypatch.setattr(customers_queries, 'get_customer', mock_get_customer)
-    monkeypatch.setattr(products_queries, 'get_product', mock_get_product)
-    monkeypatch.setattr(customers_queries, 'update_customer_balance', mock_update_customer_balance)
-    monkeypatch.setattr(products_queries, 'update_product_quantity', mock_update_product_quantity)
-    monkeypatch.setattr(queries, "add_payment", mock_add_payment)
+async def test_add_payment_low_customer_balance(
+        client,
+        create_transaction_status,
+        create_currency_type,
+        create_company
+):
+    _ = create_transaction_status
+    currency_type_id = create_currency_type
+    company_id = create_company
 
-    response = test_app.post("/payment",
-                             content=json.dumps(test_request))
+    customer = {"customer_name": "Alex",
+                "company_id": company_id,
+                "balance": 0,
+                "currency_type_id": currency_type_id}
+    response = await client.post("/customers", json=customer)
+    customer_id = response.json()["customer"]["customer_id"]
 
-    assert response.status_code == 201
-    assert response.json()['transaction'] == test_response
-'''
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": 1000,
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
+    response = await client.post("/products", json=product)
+    product_id = response.json()["product"]["product_id"]
+
+    transaction = {"quantity": 10,
+                   "customer_id": customer_id,
+                   "product_id": product_id}
+
+    response = await client.post("/payment", json=transaction)
+
+    detail = f'Not enough balance for customer with customer_id = {customer_id}'
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail
+
+
+async def test_add_payment_low_product_quantity(
+        client,
+        create_transaction_status,
+        create_currency_type,
+        create_company
+):
+    _ = create_transaction_status
+    currency_type_id = create_currency_type
+    company_id = create_company
+
+    customer = {"customer_name": "Alex",
+                "company_id": company_id,
+                "balance": 100000,
+                "currency_type_id": currency_type_id}
+    response = await client.post("/customers", json=customer)
+    customer_id = response.json()["customer"]["customer_id"]
+
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": 1000,
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
+    response = await client.post("/products", json=product)
+    product_id = response.json()["product"]["product_id"]
+
+    transaction = {"quantity": 40,
+                   "customer_id": customer_id,
+                   "product_id": product_id}
+
+    response = await client.post("/payment", json=transaction)
+
+    detail = f'Not enough quantity for product with product_id = {product_id}'
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json()["detail"] == detail
+
+
+async def test_add_payment_no_new_status(
+        client,
+        create_currency_type,
+        create_company
+):
+    currency_type_id = create_currency_type
+    company_id = create_company
+
+    customer = {"customer_name": "Alex",
+                "company_id": company_id,
+                "balance": 2222,
+                "currency_type_id": currency_type_id}
+    response = await client.post("/customers", json=customer)
+    customer_id = response.json()["customer"]["customer_id"]
+
+    product = {"product_name": "Cakes",
+               "company_id": company_id,
+               "price": 12,
+               "quantity": 30,
+               "currency_type_id": currency_type_id}
+    response = await client.post("/products", json=product)
+    product_id = response.json()["product"]["product_id"]
+
+    transaction = {"quantity": 10,
+                   "customer_id": customer_id,
+                   "product_id": product_id}
+
+    response = await client.post("/payment", json=transaction)
+
+    status_name = 'NEW'
+    detail = f'There is no transaction_status with name = {status_name}'
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()["detail"] == detail

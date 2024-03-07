@@ -10,7 +10,7 @@ async def test_add_product(client, create_currency_type, create_company):
 
     product = {"product_name": "Cakes",
                "company_id": company_id,
-               "price": "1000.00",
+               "price": 10.00,
                "quantity": 30,
                "currency_type_id": currency_type_id}
 
@@ -19,7 +19,7 @@ async def test_add_product(client, create_currency_type, create_company):
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["product"]["product_name"] == product["product_name"]
     assert response.json()["product"]["company_id"] == product["company_id"]
-    assert response.json()["product"]["price"] == product["price"]
+    assert float(response.json()["product"]["price"]) == product["price"]
     assert response.json()["product"]["quantity"] == product["quantity"]
     assert response.json()["product"]["currency_type_id"] == product["currency_type_id"]
 
@@ -37,7 +37,7 @@ async def test_add_product_negative_price_http_409_conflict(
 
     product = {"product_name": "Cakes",
                "company_id": company_id,
-               "price": "-1000.00",
+               "price": -10.00,
                "quantity": 30,
                "currency_type_id": currency_type_id}
 
@@ -60,7 +60,7 @@ async def test_add_product_negative_quantity_http_409_conflict(
 
     product = {"product_name": "Cakes",
                "company_id": company_id,
-               "price": "1000.00",
+               "price": 10.00,
                "quantity": -30,
                "currency_type_id": currency_type_id}
 
@@ -70,9 +70,16 @@ async def test_add_product_negative_quantity_http_409_conflict(
     assert response.json()["detail"] == detail
 
 
-async def test_get_products(client, create_product):
+async def test_get_products_under_price(client, create_product):
     _ = create_product
     price = 2000
-    response = await client.get(f"/products?price={price}")
+    response = await client.get(f"/products/price?price={price}")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["products"]) == 1
+
+
+async def test_get_product(client, create_product):
+    product_id = create_product
+    response = await client.get(f"/products?product_id={product_id}")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["product"]["product_id"] == product_id
