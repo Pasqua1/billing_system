@@ -3,4 +3,3 @@ __pycache__/
 .pytest_cache
 postgres-data/*
 .env
-/migrations/versions/*.py
